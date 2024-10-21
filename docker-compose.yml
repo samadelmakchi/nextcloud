@@ -1,6 +1,7 @@
 version: "3.8"
 
 services:
+
   postgres:
     image: postgres:latest
     container_name: ${APP_NAME}-postgres
@@ -17,7 +18,7 @@ services:
     container_name: ${APP_NAME}-nextcloud
     restart: always
     ports:
-      - ${INCOME_PORT}:80
+      - ${INCOME_PORT_1}:80
     links:
       - postgres
     volumes:
@@ -30,6 +31,27 @@ services:
       - POSTGRES_DB=${POSTGRESQL_DB}
       - POSTGRES_USER=${POSTGRESQL_USER}
       - POSTGRES_HOST=postgres
+
+  drawio:
+    image: jgraph/drawio:latest
+    container_name: ${APP_NAME}-drawio
+    restart: unless-stopped
+    ports:
+      - ${INCOME_PORT_2}:8080
+      - ${INCOME_PORT_3}:8443
+    environment:
+      PUBLIC_DNS: domain
+      ORGANISATION_UNIT: unit
+      ORGANISATION: org
+      CITY: city
+      STATE: state
+      COUNTRY_CODE: country
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://domain:8080 || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
 
 volumes:
   nextcloud-data:
